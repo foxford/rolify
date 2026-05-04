@@ -11,8 +11,8 @@ module Rolify
 
     def add_role(role_name, resource = nil)
       role = self.class.adapter.find_or_create_by(role_name.to_s,
-                                                  (resource.is_a?(Class) ? resource.to_s : resource.class.name if resource),
-                                                  (resource.id if resource && !resource.is_a?(Class)))
+                                                  (resource.is_a?(Module) ? resource.to_s : resource.class.name if resource),
+                                                  (resource.id if resource && !resource.is_a?(Module)))
 
       if !roles.include?(role)
         self.class.define_dynamic_method(role_name, resource) if Rolify.dynamic_shortcuts

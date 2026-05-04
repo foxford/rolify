@@ -11,7 +11,7 @@ module Rolify
       def where_strict(relation, args)
         wrap_conditions = relation.name != role_class.name
 
-        conditions = if args[:resource].is_a?(Class)
+        conditions = if args[:resource].is_a?(Module)
                        {:resource_type => args[:resource].to_s, :resource_id => nil }
                      elsif args[:resource].present?
                        {:resource_type => args[:resource].class.name, :resource_id => args[:resource].id}
@@ -26,8 +26,8 @@ module Rolify
       end
 
       def find_cached(relation, args)
-        resource_id = (args[:resource].nil? || args[:resource].is_a?(Class) || args[:resource] == :any) ? nil : args[:resource].id
-        resource_type = args[:resource].is_a?(Class) ? args[:resource].to_s : args[:resource].class.name
+        resource_id = (args[:resource].nil? || args[:resource].is_a?(Module) || args[:resource] == :any) ? nil : args[:resource].id
+        resource_type = args[:resource].is_a?(Module) ? args[:resource].to_s : args[:resource].class.name
 
         return relation.find_all { |role| role.name == args[:name].to_s } if args[:resource] == :any
 
@@ -39,8 +39,8 @@ module Rolify
       end
 
       def find_cached_strict(relation, args)
-        resource_id = (args[:resource].nil? || args[:resource].is_a?(Class)) ? nil : args[:resource].id
-        resource_type = args[:resource].is_a?(Class) ? args[:resource].to_s : args[:resource].class.name
+        resource_id = (args[:resource].nil? || args[:resource].is_a?(Module)) ? nil : args[:resource].id
+        resource_type = args[:resource].is_a?(Module) ? args[:resource].to_s : args[:resource].class.name
 
         relation.find_all do |role|
           role.resource_id == resource_id && role.resource_type == resource_type && role.name == args[:name].to_s
@@ -73,8 +73,8 @@ module Rolify
         #  role.destroy if role.send(user_class.to_s.tableize.to_sym).empty?
         #end
         cond = { :name => role_name }
-        cond[:resource_type] = (resource.is_a?(Class) ? resource.to_s : resource.class.name) if resource
-        cond[:resource_id] = resource.id if resource && !resource.is_a?(Class)
+        cond[:resource_type] = (resource.is_a?(Module) ? resource.to_s : resource.class.name) if resource
+        cond[:resource_id] = resource.id if resource && !resource.is_a?(Module)
         roles = relation.roles.where(cond)
         roles.each do |role|
           relation.roles.delete(role)
@@ -123,8 +123,8 @@ module Rolify
         return [{ :name => role }] if resource == :any
         query = [{ :name => role, :resource_type => nil, :resource_id => nil }]
         if resource
-          query << { :name => role, :resource_type => (resource.is_a?(Class) ? resource.to_s : resource.class.name), :resource_id => nil }
-          if !resource.is_a? Class
+          query << { :name => role, :resource_type => (resource.is_a?(Module) ? resource.to_s : resource.class.name), :resource_id => nil }
+          if !resource.is_a? Module
             query << { :name => role, :resource_type => resource.class.name, :resource_id => resource.id }
           end
         end
